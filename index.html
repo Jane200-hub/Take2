@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BusPass - Book Your Bus Tickets</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .seat {
+            width: 30px;
+            height: 30px;
+            margin: 4px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .seat.available {
+            background-color: #e5e7eb;
+            color: #374151;
+            border: 2px solid #9ca3af;
+        }
+        .seat.available:hover {
+            background-color: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+        .seat.booked {
+            background-color: #ef4444;
+            color: white;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+        .seat.selected {
+            background-color: #3b82f6;
+            color: white;
+            border: 2px solid #1e40af;
+        }
+        .page {
+            display: none;
+        }
+        .page.active {
+            display: block;
+        }
+        .bus-card {
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .bus-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation Bar -->
+    <nav class="bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+            <div class="text-2xl font-bold">BusPass</div>
+            <div class="flex gap-6">
+                <button onclick="showPage('home')" class="hover:text-blue-100">Home</button>
+                <button onclick="showPage('search')" class="hover:text-blue-100">Bookings</button>
+                <button class="hover:text-blue-100">Contact</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- HOME PAGE -->
+    <div id="home" class="page active">
+        <!-- Hero Section -->
+        <div class="bg-gradient-to-r from-blue-600 to-blue-700 text-white py-20">
+            <div class="max-w-7xl mx-auto px-4 text-center">
+                <h1 class="text-5xl font-bold mb-4">Book Your Bus Tickets Online</h1>
+                <p class="text-xl text-blue-100 mb-8">Find and book the best bus routes at affordable prices</p>
+                
+                <!-- Search Form -->
+                <div class="bg-white rounded-lg shadow-lg p-8 text-gray-800 max-w-2xl mx-auto">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <input type="text" id="from" placeholder="From City" class="border rounded px-4 py-2 w-full" value="New York">
+                        <input type="text" id="to" placeholder="To City" class="border rounded px-4 py-2 w-full" value="Boston">
+                        <input type="date" id="date" class="border rounded px-4 py-2 w-full">
+                        <input type="number" id="passengers" placeholder="Passengers" class="border rounded px-4 py-2 w-full" value="1" min="1" max="6">
+                    </div>
+                    <button onclick="searchBuses()" class="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition">
+                        Search Buses
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Features Section -->
+        <div class="max-w-7xl mx-auto px-4 py-16">
+            <h2 class="text-3xl font-bold text-center mb-12">Why Choose BusPass?</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-white rounded-lg shadow p-6 text-center">
+                    <div class="text-4xl mb-4">✓</div>
+                    <h3 class="text-xl font-bold mb-2">Best Prices</h3>
+                    <p class="text-gray-600">Compare prices from multiple operators and get the best deals</p>
+                </div>
+                <div class="bg-white rounded-lg shadow p-6 text-center">
+                    <div class="text-4xl mb-4">⚡</div>
+                    <h3 class="text-xl font-bold mb-2">Instant Booking</h3>
+                    <p class="text-gray-600">Book your tickets in seconds with our easy-to-use platform</p>
+                </div>
+                <div class="bg-white rounded-lg shadow p-6 text-center">
+                    <div class="text-4xl mb-4">🔒</div>
+                    <h3 class="text-xl font-bold mb-2">Secure Payment</h3>
+                    <p class="text-gray-600">All transactions are secured with SSL encryption</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SEARCH RESULTS PAGE -->
+    <div id="search" class="page">
+        <div class="bg-blue-50 border-b">
+            <div class="max-w-7xl mx-auto px-4 py-6">
+                <h2 class="text-2xl font-bold text-gray-800">Search Results</h2>
+                <p class="text-gray-600" id="searchSummary"></p>
+            </div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 py-8">
+            <div class="space-y-4">
+                <!-- Bus Result Card 1 -->
+                <div class="bus-card bg-white rounded-lg shadow hover:shadow-lg p-6 cursor-pointer" onclick="showPage('booking')">
+                    <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-center">
+                        <div>
+                            <p class="text-gray-600 text-sm">Operator</p>
+                            <p class="text-xl font-bold">City Express</p>
+                            <div class="text-yellow-500">★★★★★</div>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-gray-600 text-sm">Departure</p>
+                            <p class="text-2xl font-bold">08:30 AM</p>
+                            <p class="text-gray-600">New York</p>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-gray-600 text-sm">Duration</p>
+                            <p class="text-lg font-semibold">4h 30m</p>
+                            <div class="text-sm text-gray-500">Non-stop</div>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-gray-600 text-sm">Arrival</p>
+                            <p class="text-2xl font-bold">01:00 PM</p>
+                            <p class="text-gray-600">Boston</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-3xl font-bold text-blue-600">$45</p>
+                            <p class="text-gray-600 text-sm">per seat</p>
+                            <button class="mt-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition">
+                                Select
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bus Result Card 2 -->
+                <div class="bus-card bg-white rounded-lg shadow hover:shadow-lg p-6 cursor-pointer" onclick="showPage('booking')">
+                    <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-center">
+                        <div>
+                            <p class="text-gray-600 text-sm">Operator</p>
+                            <p class="text-xl font-bold">Comfort Travel</p>
+                            <div class="text-yellow-500">★★★★☆</div>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-gray-600 text-sm">Departure</p>
+                            <p class="text-2xl font-bold">10:15 AM</p>
+                            <p class="text-gray-600">New York</p>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-gray-600 text-sm">Duration</p>
+                            <p class="text-lg font-semibold">4h 15m</p>
+                            <div class="text-sm text-gray-500">Non-stop</div>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-gray-600 text-sm">Arrival</p>
+                            <p class="text-2xl font-bold">02:30 PM</p>
+                            <p class="text-gray-600">Boston</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-3xl font-bold text-blue-600">$38</p>
+                            <p class="text-gray-600 text-sm">per seat</p>
+                            <button class="mt-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition">
+                                Select
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bus Result Card 3 -->
+                <div class="bus-card bg-white rounded-lg shadow hover:shadow-lg p-6 cursor-pointer" onclick="showPage('booking')">
+                    <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-center">
+                        <div>
+                            <p class="text-gray-600 text-sm">Operator</p>
+                            <p class="text-xl font-bold">Quick Routes</p>
+                            <div class="text-yellow-500">★★★☆☆</div>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-gray-600 text-sm">Departure</p>
+                            <p class="text-2xl font-bold">06:00 PM</p>
+                            <p class="text-gray-600">New York</p>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-gray-600 text-sm">Duration</p>
+                            <p class="text-lg font-semibold">5h 00m</p>
+                            <div class="text-sm text-gray-500">Non-stop</div>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-gray-600 text-sm">Arrival</p>
+                            <p class="text-2xl font-bold">11:00 PM</p>
+                            <p class="text-gray-600">Boston</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-3xl font-bold text-blue-600">$29</p>
+                            <p class="text-gray-600 text-sm">per seat</p>
+                            <button class="mt-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition">
+                                Select
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- BOOKING PAGE (Seat Selection) -->
+    <div id="booking" class="page">
+        <div class="bg-blue-50 border-b">
+            <div class="max-w-7xl mx-auto px-4 py-6">
+                <h2 class="text-2xl font-bold text-gray-800">Select Your Seats</h2>
+                <p class="text-gray-600">City Express - 08:30 AM to Boston</p>
+            </div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 py-8">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Seat Selection -->
+                <div class="lg:col-span-2">
+                    <div class="bg-white rounded-lg shadow p-8">
+                        <h3 class="text-xl font-bold mb-6">Choose Your Seats</h3>
+                        
+                        <!-- Bus Layout -->
+                        <div class="bg-gray-100 p-8 rounded-lg inline-block">
+                            <div class="text-center mb-6 font-bold text-gray-600">FRONT →</div>
+                            
+                            <!-- Rows -->
+                            <div class="space-y-4">
+                                <div class="flex justify-between items-center gap-8">
+                                    <div class="w-8 text-sm text-gray-600 text-right">1</div>
+                                    <div class="flex gap-2">
+                                        <div class="seat available" onclick="toggleSeat(this)">A</div>
+                                        <div class="seat available" onclick="toggleSeat(this)">B</div>
+                                        <div class="seat booked">C</div>
+                                        <div class="seat available" onclick="toggleSeat(this)">D</div>
+                                    </div>
+                                </div>
+                                <div class="flex justify-between items-center gap-8">
+                                    <div class="w-8 text-sm text-gray-600 text-right">2</div>
+                                    <div class="flex gap-2">
+                                        <div class="seat available" onclick="toggleSeat(this)">A</div>
+                                        <div class="seat available" onclick="toggleSeat(this)">B</div>
+                                        <div class="seat available" onclick="toggleSeat(this)">C</div>
+                                        <div class="seat available" onclick="toggleSeat(this)">D</div>
+                                    </div>
+                                </div>
+                                <div class="flex justify-between items-center gap-8">
+                                    <div class="w-8 text-sm text-gray-600 text-right">3</div>
+                                    <div class="flex gap-2">
+                                        <div class="seat available" onclick="toggleSeat(this)">A</div>
+                                        <div class="seat booked">B</div>
+                                        <div class="seat available" onclick="toggleSeat(this)">C</div>
+                                        <div class="seat available" onclick="toggleSeat(this)">D</div>
+                                    </div>
+                                </div>
+                                <div class="flex justify-between items-center gap-8">
+                                    <div class="w-8 text-sm text-gray-600 text-right">4</div>
+                                    <div class="flex gap-2">
+                                        <div class="seat available" onclick="toggleSeat(this)">A</div>
+                                        <div class="seat available" onclick="toggleSeat(this)">B</div>
+                                        <div class="seat available" onclick="toggleSeat(this)">C</div>
+                                        <div class="seat available" onclick="toggleSeat(this)">D</div>
+                                    </div>
+                                </div>
+                                <div class="flex justify-between items-center gap-8">
+                                    <div class="w-8 text-sm text-gray-600 text-right">5</div>
+                                    <div class="flex gap-2">
+                                        <div class="seat booked">A</div>
+                                        <div class="seat available" onclick="toggleSeat(this)">B</div>
+                                        <div class="seat available" onclick="toggleSeat(this)">C</div>
+                                        <div class="seat booked">D</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Legend -->
+                        <div class="flex gap-8 mt-8">
+                            <div class="flex items-center gap-2">
+                                <div class="seat available" style="margin: 0;"></div>
+                                <span class="text-gray-600">Available</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <div class="seat selected" style="margin: 0;"></div>
+                                <span class="text-gray-600">Selected</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <div class="seat booked" style="margin: 0;"></div>
+                                <span class="text-gray-600">Booked</span>
+                            </div>
+                        </div>
+
+                        <!-- Amenities -->
+                        <div class="mt-8">
+                            <h4 class="font-bold mb-4">Amenities</h4>
+                            <div class="flex flex-wrap gap-4">
+                                <div class="flex items-center gap-2">
+                                    <span>✓</span>
+                                    <span class="text-gray-600">Free WiFi</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span>✓</span>
+                                    <span class="text-gray-600">AC</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span>✓</span>
+                                    <span class="text-gray-600">USB Charging</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span>✓</span>
+                                    <span class="text-gray-600">Reclining Seats</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Price Summary -->
+                <div>
+                    <div class="bg-white rounded-lg shadow p-6 sticky top-4">
+                        <h3 class="text-xl font-bold mb-4">Booking Summary</h3>
+                        <div class="space-y-3 mb-4 pb-4 border-b">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Seats Selected:</span>
+                                <span class="font-bold" id="seatsCount">0</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Price per Seat:</span>
+                                <span class="font-bold">$45</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Total:</span>
+                                <span class="text-2xl font-bold text-blue-600" id="totalPrice">$0</span>
+                            </div>
+                        </div>
+                        <button onclick="showPage('checkout')" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded transition">
+                            Proceed to Checkout
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CHECKOUT PAGE -->
+    <div id="checkout" class="page">
+        <div class="bg-blue-50 border-b">
+            <div class="max-w-7xl mx-auto px-4 py-6">
+                <h2 class="text-2xl font-bold text-gray-800">Passenger & Payment Details</h2>
+            </div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 py-8">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Passenger Form -->
+                <div class="lg:col-span-2">
+                    <div class="bg-white rounded-lg shadow p-8 mb-6">
+                        <h3 class="text-xl font-bold mb-6">Passenger Information</h3>
+                        <form id="passengerForm">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                <input type="text" placeholder="First Name" class="border rounded px-4 py-2 w-full" required>
+                                <input type="text" placeholder="Last Name" class="border rounded px-4 py-2 w-full" required>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                <input type="email" placeholder="Email Address" class="border rounded px-4 py-2 w-full" required>
+                                <input type="tel" placeholder="Phone Number" class="border rounded px-4 py-2 w-full" required>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Address -->
+                    <div class="bg-white rounded-lg shadow p-8 mb-6">
+                        <h3 class="text-xl font-bold mb-6">Address</h3>
+                        <form>
+                            <input type="text" placeholder="Street Address" class="border rounded px-4 py-2 w-full mb-4" required>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <input type="text" placeholder="City" class="border rounded px-4 py-2 w-full" required>
+                                <input type="text" placeholder="State" class="border rounded px-4 py-2 w-full" required>
+                                <input type="text" placeholder="ZIP Code" class="border rounded px-4 py-2 w-full" required>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Payment -->
+                    <div class="bg-white rounded-lg shadow p-8">
+                        <h3 class="text-xl font-bold mb-6">Payment Method</h3>
+                        <div class="space-y-4">
+                            <label class="flex items-center p-4 border rounded cursor-pointer hover:bg-gray-50">
+                                <input type="radio" name="payment" checked class="mr-3">
+                                <span class="font-semibold">Credit/Debit Card</span>
+                            </label>
+                            <label class="flex items-center p-4 border rounded cursor-pointer hover:bg-gray-50">
+                                <input type="radio" name="payment" class="mr-3">
+                                <span class="font-semibold">Net Banking</span>
+                            </label>
+                            <label class="flex items-center p-4 border rounded cursor-pointer hover:bg-gray-50">
+                                <input type="radio" name="payment" class="mr-3">
+                                <span class="font-semibold">Digital Wallet</span>
+                            </label>
+                        </div>
+
+                        <!-- Card Form (shown for credit card) -->
+                        <div class="mt-6">
+                            <input type="text" placeholder="Card Number" class="border rounded px-4 py-2 w-full mb-4" required>
+                            <div class="grid grid-cols-3 gap-4">
+                                <input type="text" placeholder="MM/YY" class="border rounded px-4 py-2" required>
+                                <input type="text" placeholder="CVV" class="border rounded px-4 py-2" required>
+                                <input type="text" placeholder="Cardholder Name" class="border rounded px-4 py-2 col-span-1" required>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Order Summary -->
+                <div>
+                    <div class="bg-white rounded-lg shadow p-6 sticky top-4 mb-6">
+                        <h3 class="text-xl font-bold mb-4">Order Summary</h3>
+                        <div class="space-y-3 mb-4 pb-4 border-b">
+                            <div>
+                                <p class="text-gray-600 text-sm">Route</p>
+                                <p class="font-semibold">New York → Boston</p>
+                            </div>
+                            <div>
+                                <p class="text-gray-600 text-sm">Date & Time</p>
+                                <p class="font-semibold">Dec 15, 08:30 AM</p>
+                            </div>
+                            <div>
+                                <p class="text-gray-600 text-sm">Operator</p>
+                                <p class="font-semibold">City Express</p>
+                            </div>
+                            <div>
+                                <p class="text-gray-600 text-sm">Seats</p>
+                                <p class="font-semibold">1A, 2B, 3C</p>
+                            </div>
+                        </div>
+                        <div class="space-y-2 mb-4">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Subtotal (3 seats)</span>
+                                <span class="font-semibold">$135</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Taxes & Fees</span>
+                                <span class="font-semibold">$12</span>
+                            </div>
+                        </div>
+                        <div class="border-t pt-4 flex justify-between">
+                            <span class="font-bold">Total Amount</span>
+                            <span class="text-2xl font-bold text-blue-600">$147</span>
+                        </div>
+                    </div>
+                    <button onclick="showPage('confirmation')" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded transition">
+                        Complete Booking
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONFIRMATION PAGE -->
+    <div id="confirmation" class="page">
+        <div class="max-w-2xl mx-auto px-4 py-16">
+            <div class="bg-white rounded-lg shadow-lg p-8 text-center">
+                <div class="text-6xl mb-4">✓</div>
+                <h1 class="text-3xl font-bold text-green-600 mb-2">Booking Confirmed!</h1>
+                <p class="text-gray-600 mb-8">Your bus ticket has been successfully booked</p>
+
+                <div class="bg-blue-50 rounded-lg p-8 mb-8 text-left">
+                    <h2 class="text-xl font-bold mb-4">Booking Details</h2>
+                    <div class="space-y-4">
+                        <div class="flex justify-between pb-4 border-b">
+                            <span class="text-gray-600">Confirmation Number:</span>
+                            <span class="font-bold text-blue-600">BUS123456789</span>
+                        </div>
+                        <div class="flex justify-between pb-4 border-b">
+                            <span class="text-gray-600">Route:</span>
+                            <span class="font-bold">New York → Boston</span>
+                        </div>
+                        <div class="flex justify-between pb-4 border-b">
+                            <span class="text-gray-600">Date & Time:</span>
+                            <span class="font-bold">December 15, 2024 - 08:30 AM</span>
+                        </div>
+                        <div class="flex justify-between pb-4 border-b">
+                            <span class="text-gray-600">Bus Operator:</span>
+                            <span class="font-bold">City Express</span>
+                        </div>
+                        <div class="flex justify-between pb-4 border-b">
+                            <span class="text-gray-600">Seats:</span>
+                            <span class="font-bold">1A, 2B, 3C</span>
+                        </div>
+                        <div class="flex justify-between pb-4 border-b">
+                            <span class="text-gray-600">Total Amount Paid:</span>
+                            <span class="font-bold text-green-600">$147</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Email Confirmation:</span>
+                            <span class="font-bold">user@example.com</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-8 text-left">
+                    <p class="font-semibold text-yellow-800 mb-2">Important Information:</p>
+                    <ul class="text-gray-700 space-y-2 text-sm">
+                        <li>• Please arrive 30 minutes before the scheduled departure time</li>
+                        <li>• A confirmation email has been sent to your registered email address</li>
+                        <li>• You can download your ticket from your account or use the confirmation number</li>
+                        <li>• In case of cancellation, please contact support within 24 hours</li>
+                    </ul>
+                </div>
+
+                <div class="flex flex-col gap-4">
+                    <button onclick="showPage('home')" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded transition">
+                        Back to Home
+                    </button>
+                    <button class="border-2 border-blue-600 text-blue-600 hover:bg-blue-50 font-bold py-3 px-6 rounded transition">
+                        Download Ticket (PDF)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-gray-300 mt-16">
+        <div class="max-w-7xl mx-auto px-4 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+                <div>
+                    <h4 class="font-bold text-white mb-4">About BusPass</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#" class="hover:text-white">About Us</a></li>
+                        <li><a href="#" class="hover:text-white">Contact Us</a></li>
+                        <li><a href="#" class="hover:text-white">Careers</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold text-white mb-4">Quick Links</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#" class="hover:text-white">My Bookings</a></li>
+                        <li><a href="#" class="hover:text-white">Refund Policy</a></li>
+                        <li><a href="#" class="hover:text-white">Help Center</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold text-white mb-4">Information</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#" class="hover:text-white">Terms & Conditions</a></li>
+                        <li><a href="#" class="hover:text-white">Privacy Policy</a></li>
+                        <li><a href="#" class="hover:text-white">FAQ</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold text-white mb-4">Follow Us</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#" class="hover:text-white">Facebook</a></li>
+                        <li><a href="#" class="hover:text-white">Twitter</a></li>
+                        <li><a href="#" class="hover:text-white">Instagram</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 pt-8 text-center text-sm">
+                <p>&copy; 2025 BusPass. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        function showPage(pageId) {
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            // Show selected page
+            document.getElementById(pageId).classList.add('active');
+            // Scroll to top
+            window.scrollTo(0, 0);
+        }
+
+        function searchBuses() {
+            const from = document.getElementById('from').value;
+            const to = document.getElementById('to').value;
+            const date = document.getElementById('date').value;
+            const passengers = document.getElementById('passengers').value;
+            
+            const summary = `${passengers} passenger(s) from ${from} to ${to}`;
+            document.getElementById('searchSummary').textContent = summary;
+            
+            showPage('search');
+        }
+
+        function toggleSeat(element) {
+            if (element.classList.contains('available')) {
+                element.classList.toggle('selected');
+                updatePrice();
+            }
+        }
+
+        function updatePrice() {
+            const selectedSeats = document.querySelectorAll('.seat.selected').length;
+            document.getElementById('seatsCount').textContent = selectedSeats;
+            document.getElementById('totalPrice').textContent = '$' + (selectedSeats * 45);
+        }
+    </script>
+</body>
+</html>
